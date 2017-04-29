@@ -33,7 +33,7 @@ LENS_APERTURE_DEFAULT='"1.8"'
 EXIFTOOL="/usr/local/bin/exiftool"
 
 # Uncomment the following line to enable debug
-#DEBUG=
+#DEBUG=2
 
 print_help() {
 	echo "Usage: exifAF50mmUpdate [-FNumber=VALUE] FILE..."
@@ -96,9 +96,11 @@ process_status=0
 echo "Set $LENS_MODEL exif tags with -FNumber=$aperture"
 for image_file in "$@"
 do
-   echo "Update $image_file"
-   if [[ -f "$image_file"_original ]]; then
-      cp -p "$image_file"_original "$image_file"
+   if [[ ! -z "${DEBUG+x}" ]]; then
+      if [[ -f "$image_file"_original ]]; then
+         echo "Restore $image_file from original"
+         cp -p "$image_file"_original "$image_file"
+      fi
    fi
    
    set_tagLens $aperture $image_file 2>&1
@@ -110,7 +112,8 @@ do
       process_status=1
    fi
    
-   if [[ ! -z "${DEBUG+x}" ]]; then
+   #if [[ ! -z "${DEBUG+x}" ]]; then
+   if [[ "$DEBUG" -eq 2 ]]; then
       # See: http://stackoverflow.com/a/13864829 to check if a variable is set 
       if [[ ! -f "$image_file"_original-exif.txt ]]; then
          exiftool -a -G1 -s "$image_file"_original > "$image_file"_original-exif.txt
