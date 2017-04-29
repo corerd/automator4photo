@@ -75,6 +75,8 @@ if [[ $1 == "-FNumber="* ]]; then
 else
    aperture=$LENS_APERTURE_DEFAULT
 fi
+# Ensures that the decimal separator is dot character
+aperture=${aperture//,/.}
 
 # check the number of remaining arguments
 if [[ $# -lt 1 ]]; then
