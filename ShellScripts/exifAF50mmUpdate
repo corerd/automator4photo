@@ -8,8 +8,9 @@
 #        exifAF50mmUpdate [-FNumber=VALUE] FILE...
 #
 # DESCRIPTION
-#        Use exiftool to write meta data in image files when lens informations
-#        are not stored by the camera (i.e. manual lens without chip).
+#        Use exiftool to add model, aperture, and focal length
+#        when such lens informations are not stored by the camera
+#        (i.e. manual lens without chip).
 #        FILE is one or more image file names.
 #
 # OPTIONS
