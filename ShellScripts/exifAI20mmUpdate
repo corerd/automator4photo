@@ -1,0 +1,127 @@
+#!/bin/bash
+
+###############################################################################
+# NAME
+#        exifAF50mmUpdate - Write lens meta informations in files
+#
+# SYNTAX
+#        exifAF50mmUpdate [-FNumber=VALUE] FILE...
+#
+# DESCRIPTION
+#        Use exiftool to add model, aperture, and focal length
+#        when such lens informations are not stored by the camera
+#        (i.e. manual lens without chip).
+#        FILE is one or more image file names.
+#
+# OPTIONS
+#        -FNumber=VALUE       Aperture (default is lens max value)
+#
+# REQUIRED
+#        exiftool by Phil Harvey
+#        See: http://www.sno.phy.queensu.ca/~phil/exiftool/
+#
+# DIAGNOSTICS
+#        This application exits with a status of 0 on success, or 1 if
+#        an error occurred processing one or more image files.
+###############################################################################
+
+LENS_MODEL="Nikon AF Nikkor 50mm f/1.8"
+LENS_APERTURE_DEFAULT='"1.8"'
+
+# exiftool application
+# Absolute path name is required by MacOS Automator
+# because it hasn't /usr/local/bin in PATH
+EXIFTOOL="/usr/local/bin/exiftool"
+
+# Uncomment the following line to enable debug
+#DEBUG=2
+
+print_help() {
+	echo "Usage: exifAF50mmUpdate [-FNumber=VALUE] FILE..."
+}
+
+## Write lens meta informations
+# argument1: aperture value
+# argument2: image file
+set_tagLens() {
+   # exif-tag setting for old unchipped lenses
+   # See: http://u88.n24.queensu.ca/exiftool/forum/index.php?topic=7167.0
+   # WARNING: Using Exif:MaxApertureValue tag
+   #          leads to unpredictable Composite:LensID value
+   echo "Update $2"
+   $EXIFTOOL -P \
+      -Exif:LensInfo="50mm f/1.8" \
+      -Exif:LensMake="Nikon" \
+      -Exif:LensModel="$LENS_MODEL" \
+      -Exif:FocalLength="50.0 mm" \
+      -Exif:FocalLengthIn35mmFormat="50 mm" \
+      -Exif:FNumber="$1" \
+      $2
+}
+
+
+################
+# MAIN PROGRAM #
+################
+
+# Check if aperture tag is set.
+# First, compare argv[1] with the tag name
+# See http://stackoverflow.com/a/16263820 to compare strings
+#
+# If argv[1] matches the tag name, assign the value
+# See http://stackoverflow.com/a/428118 to extract substring
+if [[ $1 == "-FNumber="* ]]; then
+	aperture=$(echo $1 | cut -d'=' -f 2)
+   shift
+else
+   aperture=$LENS_APERTURE_DEFAULT
+fi
+# Ensures that the decimal separator is dot character
+aperture=${aperture//,/.}
+
+# check the number of remaining arguments
+if [[ $# -lt 1 ]]; then
+	print_help
+	exit 1
+fi
+
+# Check if exiftool exists and is executable
+if [[ ! -x "$EXIFTOOL" ]]; then
+   echo "exiftool is not installed!"
+   echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
+   exit 1
+fi
+
+# process the images
+process_status=0
+echo "Set $LENS_MODEL exif tags with -FNumber=$aperture"
+for image_file in "$@"
+do
+   if [[ ! -z "${DEBUG+x}" ]]; then
+      if [[ -f "$image_file"_original ]]; then
+         echo "Restore $image_file from original"
+         cp -p "$image_file"_original "$image_file"
+      fi
+   fi
+   
+   set_tagLens $aperture $image_file 2>&1
+   exiftool_status=$?
+
+   # exiftool puts to stderr both warning and error messages.
+   # The exit status is 0 on success or warning, 1 on error.
+   if [[ $exiftool_status -ne 0 ]]; then
+      process_status=1
+   fi
+   
+   #if [[ ! -z "${DEBUG+x}" ]]; then
+   if [[ "$DEBUG" -eq 2 ]]; then
+      # See: http://stackoverflow.com/a/13864829 to check if a variable is set 
+      if [[ ! -f "$image_file"_original-exif.txt ]]; then
+         exiftool -a -G1 -s "$image_file"_original > "$image_file"_original-exif.txt
+      fi
+      exiftool -a -G1 -s "$image_file" > "$image_file"-exif.txt
+      diff "$image_file"_original-exif.txt "$image_file"-exif.txt
+   fi
+done
+
+exit $process_status
