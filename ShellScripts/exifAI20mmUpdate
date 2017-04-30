@@ -2,10 +2,10 @@
 
 ###############################################################################
 # NAME
-#        exifAF50mmUpdate - Write lens meta informations in files
+#        exifAI20mmUpdate - Write lens meta informations in files
 #
 # SYNTAX
-#        exifAF50mmUpdate [-FNumber=VALUE] FILE...
+#        exifAI20mmUpdate [-FNumber=VALUE] FILE...
 #
 # DESCRIPTION
 #        Use exiftool to add model, aperture, and focal length
@@ -25,8 +25,8 @@
 #        an error occurred processing one or more image files.
 ###############################################################################
 
-LENS_MODEL="Nikon AF Nikkor 50mm f/1.8"
-LENS_APERTURE_DEFAULT='"1.8"'
+LENS_MODEL="Nikon AI Nikkor 20mm f/3.5"
+LENS_APERTURE_DEFAULT="3.5"
 
 # exiftool application
 # Absolute path name is required by MacOS Automator
@@ -37,7 +37,7 @@ EXIFTOOL="/usr/local/bin/exiftool"
 #DEBUG=2
 
 print_help() {
-	echo "Usage: exifAF50mmUpdate [-FNumber=VALUE] FILE..."
+	echo "Usage: exifAI20mmUpdate [-FNumber=VALUE] FILE..."
 }
 
 ## Write lens meta informations
@@ -50,11 +50,11 @@ set_tagLens() {
    #          leads to unpredictable Composite:LensID value
    echo "Update $2"
    $EXIFTOOL -P \
-      -Exif:LensInfo="50mm f/1.8" \
+      -Exif:LensInfo="20mm f/3.5" \
       -Exif:LensMake="Nikon" \
       -Exif:LensModel="$LENS_MODEL" \
-      -Exif:FocalLength="50.0 mm" \
-      -Exif:FocalLengthIn35mmFormat="50 mm" \
+      -Exif:FocalLength="20.0 mm" \
+      -Exif:FocalLengthIn35mmFormat="20 mm" \
       -Exif:FNumber="$1" \
       $2
 }
