@@ -26,7 +26,7 @@
 ###############################################################################
 
 LENS_MODEL="Nikon AF Nikkor 50mm f/1.8"
-LENS_APERTURE_DEFAULT='"1.8"'
+LENS_APERTURE_DEFAULT="1.8"
 
 # exiftool application
 # Absolute path name is required by MacOS Automator
