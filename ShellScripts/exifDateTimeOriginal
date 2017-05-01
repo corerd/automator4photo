@@ -37,7 +37,7 @@ print_help() {
 	echo "Usage: exifDateTimeOriginal [--short-description==TEXT] FILE..." >&2
 }
 
-## Rename with DateTimeOriginal and short description the supplied file
+## Append an optional short description to the supplied file
 # argument1: short description text
 # argument2: image full path name
 #
@@ -55,6 +55,40 @@ rename_image_file() {
    mv "$2" "$img_full_path_new"
 }
 
+## Rename with DateTimeOriginal and short description the supplied file
+# argument1: short description text
+# argument2: image full path name
+#
+# Use exiftool application with the following arguments:
+# '-filename<DateTimeOriginal' means rename the image file using the original date from the meta information.
+# '-filename<FileModifyDate' fall back to image's modification date and time if no meta information exist.
+#   It is possible to enter many date/time tags, the last valid one will override earlier values on the command line.
+# -d means "Set format for date/time values".
+# %y%m%d_%H%M%S%%-c.%%le, used in conjunction with "-d" specifies the format to use for the date and time
+# when renaming the file. Breaking the format down:
+#   %y%m%d_ means the first part of the new file name should be composed of the last two digits of the creation-date year,
+#   followed by the month and day, both represented by two digits.
+#   The underscore _ means put in an underscore after the date part of the file name.
+# %H%M%S means add the hour, minute, and second of the creation time, all represented by two digits.
+# $1 is the short description text.
+# %%-c means that if two images have the same file name up to this point in the naming process,
+#   add "a copy number which is automatically incremented" to give each image a unique name.
+#   Note the doubled %% — necessary because of something called "escaping" that I don't fully understand.
+#   The "-" before the "c" isn't really necessary, but it puts a dash before the copy number.
+# .%%le means keep the original file name extension, but make it lower-case if it was originally upper-case,
+#   a nice option when cameras insist on using "CR2" instead of "cr2".
+#   (If you prefer upper-case extensions, then use .%%ue. If you prefer to keep the original case intact, use .%%e.)
+# -r means "execute this command recursively for every image file in the top "source" folder (that is,
+#   the folder where all the files to be renamed are located), and also for the image files
+#   in all the source folder's subfolders, sub-subfolders, and so on".
+#
+# REFERENCE
+#  Rename image files according to their creation date
+#  http://ninedegreesbelow.com/photography/exiftool-commands.html#rename
+#  http://u88.n24.queensu.ca/exiftool/forum/index.php?topic=3515.0
+exif_rename_image_file() {
+   $EXIFTOOL '-filename<FileModifyDate' '-filename<DateTimeOriginal' -d "%y%m%d_%H%M%S$1%%-c.%%e" "$2"
+}
 
 ################
 # MAIN PROGRAM #
@@ -91,7 +125,8 @@ process_status=0
 echo "Rename with --short-description=\"$short_description\"" >&2
 for image_file in "$@"
 do
-   rename_image_file "$short_description" "$image_file" >&2
+   #rename_image_file "$short_description" "$image_file" >&2
+   exif_rename_image_file "$short_description" "$image_file" >&2
    exiftool_status=$?
 
    # exiftool puts to stderr both warning and error messages.
