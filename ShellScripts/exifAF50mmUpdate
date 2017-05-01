@@ -56,7 +56,7 @@ set_tagLens() {
       -Exif:FocalLength="50.0 mm" \
       -Exif:FocalLengthIn35mmFormat="50 mm" \
       -Exif:FNumber="$1" \
-      $2
+      "$2"
 }
 
 
@@ -104,7 +104,7 @@ do
       fi
    fi
    
-   set_tagLens $aperture $image_file 2>&1
+   set_tagLens "$aperture" "$image_file" 2>&1
    exiftool_status=$?
 
    # exiftool puts to stderr both warning and error messages.
