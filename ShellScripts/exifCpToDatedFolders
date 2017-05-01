@@ -1,0 +1,52 @@
+#!/bin/bash
+
+###############################################################################
+# Moving pictures to dated folders
+# See: http://u88.n24.queensu.ca/exiftool/forum/index.php?topic=6170.0
+#
+# REQUIRED
+#        exiftool by Phil Harvey
+#        See: http://www.sno.phy.queensu.ca/~phil/exiftool/
+###############################################################################
+
+# exiftool application
+# Absolute path name is required by MacOS Automator
+# because it hasn't /usr/local/bin in PATH
+EXIFTOOL="/usr/local/bin/exiftool"
+
+print_help() {
+	echo "Usage: exifCpToDatedFolders SOURCEDIR TARGETDIR" >&2
+	exit 1
+}
+
+
+################
+# MAIN PROGRAM #
+################
+
+# Check if exiftool exists and is executable
+if [[ ! -x "$EXIFTOOL" ]]; then
+   echo "exiftool is not installed!"
+   echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
+   exit 1
+fi
+
+# check the number of arguments
+if [[ $# -ne 2 ]]; then
+	print_help
+fi
+
+# Check if directories exist
+SOURCEDIR="$1"
+TARGETDIR="$2"
+if [[ ! -d "$SOURCEDIR" ]]; then
+   echo "Source directory \"$SOURCEDIR\" doesn't exist!" >&2
+	exit 1
+fi
+if [[ -f "$TARGETDIR" ]]; then
+   echo "Target \"$TARGETDIR\" isn't a directory!" >&2
+	exit 1
+fi
+
+# process the images
+$EXIFTOOL -o . '-Directory<FileModifyDate' '-Directory<DateTimeOriginal' -d "$TARGETDIR"/%Y/%m_%B/%d "$SOURCEDIR"

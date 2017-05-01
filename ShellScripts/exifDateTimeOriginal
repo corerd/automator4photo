@@ -1,0 +1,104 @@
+#!/bin/bash
+
+###############################################################################
+# NAME
+#        exifDateTimeOriginal - Rename with DateTimeOriginal the supplied files
+#
+# SYNTAX
+#        exifDateTimeOriginal [--short-description==TEXT] FILE...
+#
+# DESCRIPTION
+#        Use exiftool to add model, aperture, and focal length
+#        when such lens informations are not stored by the camera
+#        (i.e. manual lens without chip).
+#        FILE is one or more image file names.
+#
+# OPTIONS
+#        -FNumber=VALUE       Aperture (default is lens max value)
+#
+# REQUIRED
+#        exiftool by Phil Harvey
+#        See: http://www.sno.phy.queensu.ca/~phil/exiftool/
+#
+# DIAGNOSTICS
+#        This application exits with a status of 0 on success, or 1 if
+#        an error occurred processing one or more image files.
+###############################################################################
+
+# exiftool application
+# Absolute path name is required by MacOS Automator
+# because it hasn't /usr/local/bin in PATH
+EXIFTOOL="/usr/local/bin/exiftool"
+
+# Uncomment the following line to enable debug
+#DEBUG=
+
+print_help() {
+	echo "Usage: exifDateTimeOriginal [--short-description==TEXT] FILE..." >&2
+}
+
+## Rename with DateTimeOriginal and short description the supplied file
+# argument1: short description text
+# argument2: image full path name
+#
+# Reference
+#  Extract filename and extension in Bash
+#  http://stackoverflow.com/a/965072
+rename_image_file() {
+   short_description="$1"
+   img_path="$(dirname "$2")"
+   img_name="$(basename "$2")"
+   img_ext="${img_name##*.}"
+   img_name="${img_name%.*}"
+   img_full_path_new="${img_path}/${img_name}${short_description}.${img_ext}"
+   echo "Rename $2 to $img_full_path_new"
+   mv "$2" "$img_full_path_new"
+}
+
+
+################
+# MAIN PROGRAM #
+################
+
+# Check if short-description argv is set.
+# First, compare argv[1] with the tag name
+# See http://stackoverflow.com/a/16263820 to compare strings
+#
+# If argv[1] matches the name, assign the value
+# See http://stackoverflow.com/a/428118 to extract substring
+if [[ $1 == "--short-description="* ]]; then
+	short_description="_$(echo $1 | cut -d'=' -f 2)"
+   shift
+else
+   short_description=""
+fi
+
+# check the number of remaining arguments
+if [[ $# -lt 1 ]]; then
+	print_help
+	exit 1
+fi
+
+# Check if exiftool exists and is executable
+if [[ ! -x "$EXIFTOOL" ]]; then
+   echo "exiftool is not installed!"
+   echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
+   exit 1
+fi
+
+# process the images
+process_status=0
+echo "Rename with --short-description=\"$short_description\"" >&2
+for image_file in "$@"
+do
+   rename_image_file "$short_description" "$image_file" >&2
+   exiftool_status=$?
+
+   # exiftool puts to stderr both warning and error messages.
+   # The exit status is 0 on success or warning, 1 on error.
+   if [[ $exiftool_status -ne 0 ]]; then
+      process_status=1
+   fi
+done
+
+exit $process_status
