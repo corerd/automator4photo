@@ -49,4 +49,4 @@ if [[ -f "$TARGETDIR" ]]; then
 fi
 
 # process the images
-$EXIFTOOL -o . '-Directory<FileModifyDate' '-Directory<DateTimeOriginal' -d "$TARGETDIR"/%Y_%m_%d "$SOURCEDIR"
+$EXIFTOOL -o . '-Directory<FileModifyDate' '-Directory<DateTimeOriginal' -d "$TARGETDIR"/%Y_%m "$SOURCEDIR"
