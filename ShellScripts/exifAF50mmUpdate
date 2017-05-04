@@ -25,7 +25,7 @@
 #        an error occurred processing one or more image files.
 ###############################################################################
 
-LENS_MODEL="Nikon AF Nikkor 50mm f/1.8"
+LENS_MODEL="AF Nikkor 50mm f/1.8"
 LENS_APERTURE_DEFAULT="1.8"
 
 # exiftool application
@@ -34,7 +34,7 @@ LENS_APERTURE_DEFAULT="1.8"
 EXIFTOOL="/usr/local/bin/exiftool"
 
 # Uncomment the following line to enable debug
-#DEBUG=2
+DEBUG=
 
 print_help() {
 	echo "Usage: exifAF50mmUpdate [-FNumber=VALUE] FILE..."

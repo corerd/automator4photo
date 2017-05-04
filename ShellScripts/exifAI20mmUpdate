@@ -25,7 +25,7 @@
 #        an error occurred processing one or more image files.
 ###############################################################################
 
-LENS_MODEL="Nikon AI Nikkor 20mm f/3.5"
+LENS_MODEL="AI Nikkor 20mm f/3.5"
 LENS_APERTURE_DEFAULT="3.5"
 
 # exiftool application
@@ -34,7 +34,7 @@ LENS_APERTURE_DEFAULT="3.5"
 EXIFTOOL="/usr/local/bin/exiftool"
 
 # Uncomment the following line to enable debug
-#DEBUG=2
+#DEBUG=
 
 print_help() {
 	echo "Usage: exifAI20mmUpdate [-FNumber=VALUE] FILE..."
