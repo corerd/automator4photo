@@ -44,7 +44,7 @@ set_tagLens() {
    # WARNING: Using Exif:MaxApertureValue tag
    #          leads to unpredictable Composite:LensID value
    echo "Update $2"
-   $EXIFTOOL -P \
+   $EXIFTOOL -P -overwrite_original \
       -Exif:LensInfo="50mm f/1.8" \
       -Exif:LensMake="Nikon" \
       -Exif:LensModel="$LENS_MODEL" \
