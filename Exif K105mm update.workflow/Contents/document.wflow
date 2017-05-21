@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AMApplicationBuild</key>
+	<string>419</string>
+	<key>AMApplicationVersion</key>
+	<string>2.6</string>
+	<key>AMDocumentVersion</key>
+	<string>2</string>
+	<key>actions</key>
+	<array>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>1.0.2</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run AppleScript.action</string>
+				<key>ActionName</key>
+				<string>Esegui AppleScript</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>source</key>
+					<string>(** * Add lens model, focal length and aperture to the pictures selected in the Finder. * * input parameter is the list of files selected in the Finder * parameters parameter is a record that contains the settings made in the action’s user interface. * * This script collects the files received from Finder, ask the aperture to the user * and pass such data to an exif editor shell script. * * REQUIRED *	Default aperture string value *	Title of dialog windows (the name of this workflow) *	Exif editor shell script full path name *	Aperture value (from user dialog) * * REFERENCES *	Mac Automation Scripting Guide *	https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/index.html#//apple_ref/doc/uid/TP40016239-CH56-SW1 * *	Writing the Action Script *	https://developer.apple.com/library/content/documentation/AppleApplications/Conceptual/AutomatorTutorialAppleScript/WritingScript/WritingScript.html * * ---------------------------------------------------------------------------- * THE BEER-WARE LICENSE * &lt;corerd@live.com&gt; wrote this file.  As long as you retain this notice you * can do whatever you want with this stuff. If we meet some day, and you think * this stuff is worth it, you can buy me a beer in return. * ---------------------------------------------------------------------------- *)on run {input, parameters}	-- Set default aperture string value.	set apertureStrDefault to 2.5 as string		-- Set the title of dialog windows	set dlgTitle to "Exif K105mm update"		-- Set the exif editor shell script	set exifEditor to "$HOME/.local/bin/exifK105mmUpdate"		-- Get aperture string value from user dialog	set dlgAskFor to "Lens Aperture"	if (0.0 as text is "0,0") then		-- AppleScript refers to the user's Language &amp; Text preferences		-- when creating or interpreting text representations of reals.		set dlgAskFor to dlgAskFor &amp; " (decimal point is represented as comma)"	end if	set apertureStrValue to the text returned of (display dialog dlgAskFor &amp; ":" with title dlgTitle default answer apertureStrDefault)		-- Validate user input number:	-- 	refuse negative values	-- 	refuse exponential notation	if (length of apertureStrValue is 0) then		-- If not entered, use default		set apertureStrValue to apertureStrDefault	else		-- Error Numbers and Error Messages		-- https://developer.apple.com/library/content/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_error_codes.html				-- If the input string is not a number, throw an exception.		-- See http://stackoverflow.com/a/918538		set apertureValue to apertureStrValue as number				-- check negative value		set isNegativeApertureValue to apertureValue is less than 0		if isNegativeApertureValue then			-- stop script execution with error number			error number -50 -- Parameter error		end if				-- check exponential notation		if apertureStrValue contains "e" or apertureStrValue contains "E" then			-- stop script execution with error number			error number -50 -- Parameter error		end if	end if		-- Format the returned output	set apertureTag to "-FNumber=" &amp; apertureStrValue		-- Convert input list to shell script arguments	-- translating an AppleScript path into a POSIX path	set cnt to 0	set args to ""	repeat with idx from 1 to length of input		set mac_file_path to item idx of input		set file_path to POSIX path of mac_file_path		-- file_path may be separated by spaces: quote it		set file_path to quoted form of file_path		set args to args &amp; " " &amp; file_path		set cnt to cnt + 1	end repeat	set argc to cnt as string		display notification argc &amp; " files to be updated" with title dlgTitle		-- Apple script ignores the user environment PATH setting	-- then use the full path to the command	do shell script exifEditor &amp; " " &amp; apertureTag &amp; args	display notification argc &amp; " files" with title dlgTitleend run</string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.Automator.RunScript</string>
+				<key>CFBundleVersion</key>
+				<string>1.0.2</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunScriptAction</string>
+				<key>InputUUID</key>
+				<string>567BE47A-B8B7-4AF6-B16A-A77B005E9211</string>
+				<key>Keywords</key>
+				<array>
+					<string>Esegui</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>79308342-5DA8-4B94-922A-592E0513CD38</string>
+				<key>ShowWhenRun</key>
+				<false/>
+				<key>UUID</key>
+				<string>1C60D761-517F-47D2-9C8B-30341DFA37C1</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<string>on run {input, parameters}
+	
+	(* Your script goes here *)
+	
+	return input
+end run</string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<true/>
+				<key>location</key>
+				<string>425.500000:708.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run AppleScript.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<true/>
+		</dict>
+	</array>
+	<key>connectors</key>
+	<dict/>
+	<key>variables</key>
+	<array>
+		<dict>
+			<key>UUID</key>
+			<string>81D994C4-EC63-46F3-8B65-C21FCE82ED90</string>
+			<key>identifier</key>
+			<string>com.apple.Automator.Variable.Storage</string>
+			<key>name</key>
+			<string>Apertura</string>
+		</dict>
+		<dict>
+			<key>UUID</key>
+			<string>5F3B301F-9940-4B55-B6CD-DC3B6AAD6647</string>
+			<key>identifier</key>
+			<string>com.apple.Automator.Variable.Storage</string>
+			<key>name</key>
+			<string>Immagini</string>
+		</dict>
+	</array>
+	<key>workflowMetaData</key>
+	<dict>
+		<key>serviceApplicationBundleID</key>
+		<string>com.apple.finder</string>
+		<key>serviceApplicationPath</key>
+		<string>/System/Library/CoreServices/Finder.app</string>
+		<key>serviceInputTypeIdentifier</key>
+		<string>com.apple.Automator.fileSystemObject.image</string>
+		<key>serviceOutputTypeIdentifier</key>
+		<string>com.apple.Automator.nothing</string>
+		<key>serviceProcessesInput</key>
+		<integer>0</integer>
+		<key>workflowTypeIdentifier</key>
+		<string>com.apple.Automator.servicesMenu</string>
+	</dict>
+</dict>
+</plist>
