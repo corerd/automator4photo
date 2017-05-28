@@ -8,13 +8,11 @@
 #        exifDateTimeOriginal [--short-description==TEXT] FILE...
 #
 # DESCRIPTION
-#        Use exiftool to add model, aperture, and focal length
-#        when such lens informations are not stored by the camera
-#        (i.e. manual lens without chip).
+#        Use exiftool to rename with DateTimeOriginal and short description.
 #        FILE is one or more image file names.
 #
 # OPTIONS
-#        -FNumber=VALUE       Aperture (default is lens max value)
+#        --short-description==TEXT   short description text
 #
 # REQUIRED
 #        exiftool by Phil Harvey
