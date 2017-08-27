@@ -2,13 +2,13 @@
 
 ###############################################################################
 # NAME
-#        exifCopyRightsUpdate - Write copyrights informations in files
+#        exifCopyRightsUpdate - Write copyrights information in files
 #
 # SYNTAX
 #        exifCopyRightsUpdate -Photographer=STRING [-Description=STRING] FILE...
 #
 # DESCRIPTION
-#        Use exiftool to add copyrights informations.
+#        Use exiftool to add copyrights information.
 #        FILE is one or more image file names.
 #
 # OPTIONS
@@ -34,10 +34,20 @@
 AGENCY="Corrado Ubezio"
 AGENCY_EMAIL="corerd@live.com"
 
-# exiftool application
-# Absolute path name is required by MacOS Automator
-# because it hasn't /usr/local/bin in PATH
-EXIFTOOL="/usr/local/bin/exiftool"
+# Set exiftool command and check if exists
+# See: https://stackoverflow.com/a/677212
+EXIFTOOL="exiftool"
+if ! hash "$EXIFTOOL" 2>/dev/null; then
+   # Check if exiftool absolute path exists and is executable.
+   # The absolute command path is required by MacOS Automator
+   # because it hasn't /usr/local/bin in PATH
+   EXIFTOOL="/usr/local/bin/exiftool"
+   if [[ ! -x "$EXIFTOOL" ]]; then
+      echo "exiftool is not installed!"
+      echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
+      exit 1
+   fi
+fi
 
 # Uncomment the following line to enable debug
 #DEBUG=
@@ -63,7 +73,7 @@ get_imgDateYear() {
       dateTime="Current Date/Time : $(date +%Y:%m:%d" "%H:%M:%S)"
    fi
    #echo $dateTime
-   
+
    # dateTime string format:
    #   <dateTime> ::= <description> : YYYY:mm:dd HH:MM:SS
    #   <description> ::= "Date/Time Original" | "File Modification Date/Time" | "Date/Time Original"
@@ -80,7 +90,7 @@ get_imgDateYear() {
 set_tagCopyright() {
    # Get copyright year from the year of the image
    local imgYear="$(get_imgDateYear $3)"
-   
+
    $EXIFTOOL -P -overwrite_original \
       -Creator="$1" \
       -CreatorCountry="Italy" \
@@ -128,13 +138,6 @@ if [[ $# -lt 1 ]]; then
 	exit 1
 fi
 
-# Check if exiftool exists and is executable
-if [[ ! -x "$EXIFTOOL" ]]; then
-   echo "exiftool is not installed!"
-   echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
-   exit 1
-fi
-
 # process the images
 process_status=0
 echo "Set Copyrights for >$photographer< description:>$description<"
@@ -149,7 +152,7 @@ do
    if [[ $exiftool_status -ne 0 ]]; then
       process_status=1
    fi
-   
+
    if [[ ! -z "${DEBUG+x}" ]]; then
       exiftool -a -G1 -s "$image_file"
    fi

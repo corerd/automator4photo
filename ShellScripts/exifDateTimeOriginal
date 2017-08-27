@@ -30,10 +30,20 @@
 # ----------------------------------------------------------------------------
 ###############################################################################
 
-# exiftool application
-# Absolute path name is required by MacOS Automator
-# because it hasn't /usr/local/bin in PATH
-EXIFTOOL="/usr/local/bin/exiftool"
+# Set exiftool command and check if exists
+# See: https://stackoverflow.com/a/677212
+EXIFTOOL="exiftool"
+if ! hash "$EXIFTOOL" 2>/dev/null; then
+   # Check if exiftool absolute path exists and is executable.
+   # The absolute command path is required by MacOS Automator
+   # because it hasn't /usr/local/bin in PATH
+   EXIFTOOL="/usr/local/bin/exiftool"
+   if [[ ! -x "$EXIFTOOL" ]]; then
+      echo "exiftool is not installed!"
+      echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
+      exit 1
+   fi
+fi
 
 # Uncomment the following line to enable debug
 #DEBUG=
@@ -116,13 +126,6 @@ fi
 if [[ $# -lt 1 ]]; then
 	print_help
 	exit 1
-fi
-
-# Check if exiftool exists and is executable
-if [[ ! -x "$EXIFTOOL" ]]; then
-   echo "exiftool is not installed!"
-   echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
-   exit 1
 fi
 
 # process the images

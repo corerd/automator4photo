@@ -2,14 +2,14 @@
 
 ###############################################################################
 # NAME
-#        exifK105mmUpdate - Write lens meta informations in files
+#        exifK105mmUpdate - Write lens meta information in files
 #
 # SYNTAX
 #        exifK105mmUpdate [-FNumber=VALUE] FILE...
 #
 # DESCRIPTION
 #        Use exiftool to add model, aperture, and focal length
-#        when such lens informations are not stored by the camera
+#        when such lens information are not stored by the camera
 #        (i.e. manual lens without chip).
 #        FILE is one or more image file names.
 #
@@ -35,10 +35,20 @@
 LENS_MODEL="K Nikkor 105mm f/2.5"
 LENS_APERTURE_DEFAULT="2.5"
 
-# exiftool application
-# Absolute path name is required by MacOS Automator
-# because it hasn't /usr/local/bin in PATH
-EXIFTOOL="/usr/local/bin/exiftool"
+# Set exiftool command and check if exists
+# See: https://stackoverflow.com/a/677212
+EXIFTOOL="exiftool"
+if ! hash "$EXIFTOOL" 2>/dev/null; then
+   # Check if exiftool absolute path exists and is executable.
+   # The absolute command path is required by MacOS Automator
+   # because it hasn't /usr/local/bin in PATH
+   EXIFTOOL="/usr/local/bin/exiftool"
+   if [[ ! -x "$EXIFTOOL" ]]; then
+      echo "exiftool is not installed!"
+      echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
+      exit 1
+   fi
+fi
 
 # Uncomment the following line to enable debug
 #DEBUG=
@@ -47,7 +57,7 @@ print_help() {
 	echo "Usage: exifK105mmUpdate [-FNumber=VALUE] FILE..."
 }
 
-## Write lens meta informations
+## Write lens meta information
 # argument1: aperture value
 # argument2: image file
 set_tagLens() {
@@ -92,13 +102,6 @@ if [[ $# -lt 1 ]]; then
 	exit 1
 fi
 
-# Check if exiftool exists and is executable
-if [[ ! -x "$EXIFTOOL" ]]; then
-   echo "exiftool is not installed!"
-   echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
-   exit 1
-fi
-
 # process the images
 process_status=0
 echo "Set $LENS_MODEL exif tags with -FNumber=$aperture"
@@ -110,7 +113,7 @@ do
          cp -p "$image_file"_original "$image_file"
       fi
    fi
-   
+
    set_tagLens "$aperture" "$image_file" 2>&1
    exiftool_status=$?
 
@@ -119,10 +122,10 @@ do
    if [[ $exiftool_status -ne 0 ]]; then
       process_status=1
    fi
-   
+
    #if [[ ! -z "${DEBUG+x}" ]]; then
    if [[ "$DEBUG" -eq 2 ]]; then
-      # See: http://stackoverflow.com/a/13864829 to check if a variable is set 
+      # See: http://stackoverflow.com/a/13864829 to check if a variable is set
       if [[ ! -f "$image_file"_original-exif.txt ]]; then
          exiftool -a -G1 -s "$image_file"_original > "$image_file"_original-exif.txt
       fi
