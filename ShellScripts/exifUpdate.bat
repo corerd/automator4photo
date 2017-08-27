@@ -93,7 +93,7 @@ if %drive%==Z set "drive=z"
 set "nixFilePath=/mnt/%drive%%nixFilePath%"
 
 echo %nixFilePath%
-bash ./exifAI20mmUpdate "%FNumber%" "%nixFilePath%"
+bash ./exifAI20mmUpdate %FNumber% "%nixFilePath%"
 if errorlevel 1 goto exit_bash_error
 
 goto next_arg
