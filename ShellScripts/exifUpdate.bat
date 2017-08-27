@@ -18,6 +18,8 @@ rem        -F VALUE     Aperture (optional; default is lens max value)
 rem        FILE...      One or more image file names
 rem
 rem REQUIRED
+rem        Windows Subsystem for Linux (WSL) to provide Bash.exe application.
+rem
 rem        exiftool by Phil Harvey
 rem        See: http://www.sno.phy.queensu.ca/~phil/exiftool/
 rem
@@ -35,6 +37,12 @@ rem ############################################################################
 
 rem Move to the current directory
 cd %~dp0
+
+if "%~1"=="" goto exit_syntax_error
+
+rem Get first argument as bash script and shift to the next
+set "bash_script=./%~1"
+shift
 
 rem Parse parameters in batch files at DOS command line
 rem See: https://stackoverflow.com/a/14298769
@@ -93,7 +101,7 @@ if %drive%==Z set "drive=z"
 set "nixFilePath=/mnt/%drive%%nixFilePath%"
 
 echo %nixFilePath%
-bash ./exifAI20mmUpdate %FNumber% "%nixFilePath%"
+bash "%bash_script%" %FNumber% "%nixFilePath%"
 if errorlevel 1 goto exit_bash_error
 
 goto next_arg
@@ -111,6 +119,12 @@ goto exit_good
 :exit_good
 pause
 exit /B 0
+
+
+:exit_syntax_error
+echo exifUpdate BASH_SCRIPT [-F VALUE] FILE...
+pause
+exit /B 1
 
 
 :exit_bash_error
