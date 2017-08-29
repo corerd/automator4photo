@@ -122,7 +122,7 @@ exit /B 0
 
 
 :exit_syntax_error
-echo exifUpdate BASH_SCRIPT [-F VALUE] FILE...
+echo SYNTAX: exifUpdate BASH_SCRIPT [-F VALUE] FILE...
 pause
 exit /B 1
 
