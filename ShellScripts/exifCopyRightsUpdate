@@ -65,9 +65,9 @@ print_help() {
 #   If -FileModifyDate is not available then return current year
 get_imgDateYear() {
    local dateTime
-   dateTime="$($EXIFTOOL -DateTimeOriginal $1)"
+   dateTime="$($EXIFTOOL -DateTimeOriginal "$1")"
    if [[ -z "$dateTime" ]]; then
-      dateTime="$($EXIFTOOL -FileModifyDate $1)"
+      dateTime="$($EXIFTOOL -FileModifyDate "$1")"
    fi
    if [[ -z "$dateTime" ]]; then
       dateTime="Current Date/Time : $(date +%Y:%m:%d" "%H:%M:%S)"
@@ -89,8 +89,9 @@ get_imgDateYear() {
 # argument3: image file
 set_tagCopyright() {
    # Get copyright year from the year of the image
-   local imgYear="$(get_imgDateYear $3)"
+   local imgYear="$(get_imgDateYear "$3")"
 
+   echo "Update $3"
    $EXIFTOOL -P -overwrite_original \
       -Creator="$1" \
       -CreatorCountry="Italy" \
