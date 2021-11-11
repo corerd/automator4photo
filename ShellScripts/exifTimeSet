@@ -1,0 +1,183 @@
+#!/bin/bash
+
+################################################################################
+# NAME
+#        exifTimeSet - Update the time and date of when pictures are taken
+#
+# SYNTAX
+#        exifTimeSet -dt[+-]=VALUE [-UTC[+-]=VALUE] FILE...
+#
+# DESCRIPTION
+#        Use exiftool to update date/time tags
+#        -dt[+-]=VALUE    New create date/time value
+#        FILE             One or more picture file names.
+#
+#        Exif standard date/time tags are:
+#            DateTimeOriginal
+#            CreateDate
+#            ModifyDate
+#
+#        This tools updates also not standard tags:
+#            IFD1:ModifyDate
+#            SonyDateTime
+#            SonyDateTime2
+#
+# OPTIONS
+#        -UTC[+-]=VALUE   Set the new Coordinated Universal Time
+#
+# VALUE date/time format is YYYY:mm:dd HH:MM:SS[.ss][+/-HH:MM|Z]
+#
+# REQUIRED
+#        exiftool by Phil Harvey
+#        See: http://www.sno.phy.queensu.ca/~phil/exiftool/
+#
+# DIAGNOSTICS
+#        This application exits with a status of 0 on success, or 1 if
+#        an error occurred processing one or more picture files.
+#
+#
+# EXAMPLES
+#
+# If you are adjusting the time zone (e.g. Daylight Saving Time),
+# you you shouldn't touch UTC.
+#
+# exifTimeSet +=1 FILE
+#    Set Daylight Saving Time (DST) moving the time zone forward one hour.
+#    UTC is not touched.
+#
+# exifTimeSet -=1 FILE
+#    Adjust the time zone back one hour (e.g. reverting from DST).
+#    UTC is not touched.
+#
+# exiftool -time:all -a -G1 FILE
+#    Get date/time informations available in FILE
+#
+# ------------------------------------------------------------------------------
+# THE BEER-WARE LICENSE
+# <corerd@live.com> wrote this file.  As long as you retain this notice you
+# can do whatever you want with this stuff. If we meet some day, and you think
+# this stuff is worth it, you can buy me a beer in return.
+# ------------------------------------------------------------------------------
+################################################################################
+
+# Uncomment the following line to enable debug
+#DEBUG=
+
+# Set exiftool command and check if exists
+# See: https://stackoverflow.com/a/677212
+EXIFTOOL="exiftool"
+if ! hash "$EXIFTOOL" 2>/dev/null; then
+   # Check if exiftool absolute path exists and is executable.
+   # The absolute command path is required by MacOS Automator
+   # because it hasn't /usr/local/bin in PATH
+   EXIFTOOL="/usr/local/bin/exiftool"
+   if [[ ! -x "$EXIFTOOL" ]]; then
+      echo "exiftool is not installed!"
+      echo "Check in http://www.sno.phy.queensu.ca/~phil/exiftool/"
+      exit 1
+   fi
+fi
+
+print_help() {
+	echo "Usage: exifTimeSet -dt[+-]=VALUE [-UTC[+-]=VALUE] FILE..."
+}
+
+## Change creation date/time of the picture
+# argument1: date/time value expression
+# argument2: UTC value expression
+# argument3: picture file
+set_datetime() {
+    overwrite_original=""
+    if [[ -z "${DEBUG+x}" ]]; then
+        # Overwrite original FILE instead of preserving it by adding _original.
+        overwrite_original="-overwrite_original"
+    fi    
+
+    # exiftool arguments:
+    #   Preserve the filesystem modification date/time of the original file.
+    #   AllDates tag is provided as a shortcut for DateTimeOriginal, CreateDate
+    #   and ModifyDate standard tags.
+    #   Set not standard Date Time tags too: IFD1:ModifyDate and SonyDateTime.
+    if [[ -z $2 ]]; then
+        $EXIFTOOL -P $overwrite_original \
+            -AllDates"$1" \
+            -IFD1:ModifyDate"$1" \
+            -SonyDateTime"$1" \
+            "$3"
+    else
+        # touch also not standard UTC tags
+        # @todo SonyDateTime2 tag does not support YYYY:mm:dd HH:MM:SS format
+        # but only +/-HH:MM (exiftool version 11.88).
+        $EXIFTOOL -P $overwrite_original \
+            -AllDates"$1" \
+            -IFD1:ModifyDate"$1" \
+            -SonyDateTime"$1" \
+            -SonyDateTime2"$2" \
+            "$3"
+    fi
+}
+
+
+################
+# MAIN PROGRAM #
+################
+
+# check the number of arguments at least 2
+if [[ $# -lt 2 ]]; then
+	print_help
+	exit 1
+fi
+
+# Extract date/time expresssion from the argument
+if [[ $1 == "-dt-="* ]]; then
+    datetime_exp="-=\"$(echo $1 | cut -b 1-5 --complement)\""
+elif [[ $1 == "-dt+="* ]]; then
+    datetime_exp="+=\"$(echo $1 | cut -b 1-5 --complement)\""
+elif [[ $1 == "-dt="* ]]; then
+    datetime_exp="=\"$(echo $1 | cut -b 1-4 --complement)\""
+else
+	print_help
+	exit 1
+fi
+shift
+
+# Check optional UTC value expresssion format.
+utc_exp=""
+if [[ $1 == "-UTC-="* ]]; then
+    utc_exp="-=\"$(echo $1 | cut -b 1-6 --complement)\""
+    shift
+elif [[ $1 == "-UTC+="* ]]; then
+    utc_exp="+=\"$(echo $1 | cut -b 1-6 --complement)\""
+    shift
+elif [[ $1 == "-UTC="* ]]; then
+    utc_exp="=\"$(echo $1 | cut -b 1-5 --complement)\""
+    shift
+fi
+
+# check the number of remaining arguments
+if [[ $# -lt 1 ]]; then
+	print_help
+	exit 1
+fi
+
+# process the pictures
+echo "Update date/time $datetime_exp $utc_exp"
+process_status=0
+for picture_file in "$@"
+do
+    echo "$picture_file"
+    if [[ -n "${DEBUG+x}" ]]; then
+        echo "Restore $picture_file from original (if any)"
+        $EXIFTOOL -restore_original "$picture_file" 2>&1
+    fi
+
+    # exiftool puts to stderr both warning and error messages.
+    # The exit status is 0 on success or warning, 1 on error.
+    set_datetime "$datetime_exp" "$utc_exp" "$picture_file" 2>&1
+    if [[ $? -ne 0 ]]; then
+        process_status=1
+    fi
+done
+
+exit $process_status
+
