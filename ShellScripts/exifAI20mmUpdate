@@ -33,7 +33,7 @@
 ###############################################################################
 
 LENS_MODEL="AI Nikkor 20mm f/3.5"
-LENS_APERTURE_DEFAULT="3.5"
+LENS_APERTURE_DEFAULT=""
 
 # Set exiftool command and check if exists
 # See: https://stackoverflow.com/a/677212
@@ -66,14 +66,25 @@ set_tagLens() {
    # WARNING: Using Exif:MaxApertureValue tag
    #          leads to unpredictable Composite:LensID value
    echo "Update $2"
-   $EXIFTOOL -P -overwrite_original \
-      -Exif:LensInfo="20mm f/3.5" \
-      -Exif:LensMake="Nikon" \
-      -Exif:LensModel="$LENS_MODEL" \
-      -Exif:FocalLength="20.0 mm" \
-      -Exif:FocalLengthIn35mmFormat="20 mm" \
-      -Exif:FNumber="$1" \
-      "$2"
+   FNumber="$1"
+   if [ ${#FNumber} -eq 0 ]; then
+       $EXIFTOOL -P -overwrite_original \
+          -Exif:LensInfo="20mm f/3.5" \
+          -Exif:LensMake="Nikon" \
+          -Exif:LensModel="$LENS_MODEL" \
+          -Exif:FocalLength="20.0 mm" \
+          -Exif:FocalLengthIn35mmFormat="20 mm" \
+          "$2"
+   else
+       $EXIFTOOL -P -overwrite_original \
+          -Exif:LensInfo="20mm f/3.5" \
+          -Exif:LensMake="Nikon" \
+          -Exif:LensModel="$LENS_MODEL" \
+          -Exif:FocalLength="20.0 mm" \
+          -Exif:FocalLengthIn35mmFormat="20 mm" \
+          -Exif:FNumber=FNumber \
+          "$2"
+   fi
 }
 
 
@@ -88,8 +99,8 @@ set_tagLens() {
 # If argv[1] matches the tag name, assign the value
 # See http://stackoverflow.com/a/428118 to extract substring
 if [[ $1 == "-FNumber="* ]]; then
-	aperture=$(echo $1 | cut -d'=' -f 2)
-   shift
+    aperture=$(echo $1 | cut -d'=' -f 2)
+    shift
 else
    aperture=$LENS_APERTURE_DEFAULT
 fi
